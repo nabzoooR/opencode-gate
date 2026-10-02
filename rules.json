@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "description": "Blocchi deterministici istantanei (fail-closed). Tutto il resto passa e va in shadow al classificatore.",
+  "bash_deny": [
+    "rm\\s+(-[a-z]*r[a-z]*f|-[a-z]*f[a-z]*r)[\\s]+(/[\\s]*$|/[\\*\\s]|~|\\$HOME|\\*)",
+    "\\bmkfs(\\.|\\s)",
+    "\\bdd\\s+.*\\bof=/(dev|\\s)",
+    ":\\(\\)\\s*\\{\\s*:\\|:\\s*&\\s*\\}\\s*;\\s*:",
+    "chmod\\s+-R\\s+777\\s+/(\\s|$)",
+    "chown\\s+-R\\s+[^\\s]+\\s+/(\\s|$)",
+    ">\\s*/dev/(sd[a-z]|nvme|hd[a-z]|vd[a-z])",
+    "shutdown\\s+(-h|now)",
+    "reboot",
+    "iptables\\s+(-F|-X|-P\\s+INPUT\\s+DROP)"
+  ],
+  "bash_ask_shadow": [
+    "curl\\s+.*\\|\\s*(ba)?sh",
+    "wget\\s+.*\\|\\s*(ba)?sh",
+    "git\\s+push\\s+.*--force",
+    "git\\s+reset\\s+--hard",
+    "docker\\s+system\\s+prune"
+  ],
+  "write_deny_paths": [
+    "(^|/)\\.env($|\\.)",
+    "^/etc/",
+    "^/boot/",
+    "(^|/)\\.ssh/"
+  ]
+}

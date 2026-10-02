@@ -1,0 +1,15 @@
+# ambiente e cache
+.venv/
+__pycache__/
+*.pyc
+
+# pesi e dati locali (mai nel repo: ~3GB + licenze pesi)
+models/
+*.gguf
+*.safetensors
+
+# log: contengono prompt e output utente (privacy)
+/logs/
+
+# HF cache se mai puntata qui
+.huggingface/

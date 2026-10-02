@@ -1,0 +1,16 @@
+[Unit]
+Description=FastJev local SystemOne classifier for OpenCode gate
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/nabz/Dev/opencode-gate
+ExecStart=/home/nabz/Dev/opencode-gate/.venv/bin/python -m uvicorn serve:app --host 127.0.0.1 --port 8080 --workers 1
+Restart=on-failure
+RestartSec=10
+# Limita impronta: 1 worker = 1 copia modello (~3GB GGUF su CPU)
+MemoryMax=12G
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "fitted": "2026-10-02",
+  "basis": "14 casi etichettati su fastjev-qwen3.5-4b Q4_K_M, tuning.json",
+  "route": {"accept_if_top_prob_at_least": 0.6, "note": "corretti 0.97-1.00, margine ampio"},
+  "safety": {"review_if_safe_below": 0.7, "note": "safe 0.906-0.964, unsafe 0.002-0.273; il blocco resta solo deterministico"},
+  "priority": {"critical_at": 2.5, "complex_at": 1.5, "simple_at": 0.8, "note": "trivial 0.35, critical 2.86"},
+  "grounded": {"done_if_at_least": 0.6, "note": "ok 1.00, fail 0.00"}
+}
