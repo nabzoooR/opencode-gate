@@ -3,7 +3,7 @@
 // (rules.json) + resto in shadow fire-and-forget verso 127.0.0.1:8080.
 
 const GATE_URL = "http://127.0.0.1:8080";
-const GATE_MODEL = "fastjev-qwen3.5-4b";
+const GATE_MODEL = "openjev-08b-nli";
 const RULES_PATH = "/home/nabz/Dev/opencode-gate/rules.json";
 const LOG_PATH = "/home/nabz/Dev/opencode-gate/logs/gate.log";
 const THRESHOLDS_PATH = "/home/nabz/Dev/opencode-gate/thresholds.json";
@@ -65,16 +65,6 @@ function shadow(state, questions, meta) {
       const data = await res.json();
       const stateSnippet = String(state).slice(0, 300);
       await logLine({ kind: "shadow-ok", ms: Date.now() - t0, ...meta, state: stateSnippet, answers: data.answers });
-      // Flag di review (mai blocco): safety sotto soglia tarata.
-      try {
-        const s = data.answers && data.answers.safe;
-        const lim = thresholds && thresholds.safety && thresholds.safety.review_if_safe_below;
-        if (s && typeof s.noul === "number" && typeof lim === "number" && s.noul < lim) {
-          await logLine({ kind: "review", ms: Date.now() - t0, ...meta, state: String(state).slice(0, 300), safe: s.noul });
-        }
-      } catch {
-        // best-effort
-      }
     } catch (err) {
       await logLine({ kind: "shadow-failover", ms: Date.now() - t0, ...meta, error: String(err).slice(0, 200) });
     } finally {
@@ -123,9 +113,14 @@ export default {
             },
           },
           priority: {
-            type: "score",
+            type: "choice",
             instructions: "How complex/risky is this task?",
-            criteria: ["trivial", "simple", "complex", "critical"],
+            criteria: {
+              trivial: "Trivial question or tiny lookup",
+              simple: "Small bounded task",
+              complex: "Multi-step work across files",
+              critical: "Production, data loss or security risk",
+            },
           },
         }, { hook: "prompt" });
       } catch {
@@ -159,14 +154,8 @@ export default {
             throw new Error(`[gate] scrittura bloccata dalla policy locale (regola: ${hit})`);
           }
         }
-        const probe = event.tool === "bash"
-          ? String(args.command || args.cmd || "")
-          : JSON.stringify(args).slice(0, 1000);
-        if (probe.trim()) {
-          shadow(`tool=${event.tool} args=${probe}`, {
-            safe: { type: "noul", instructions: "Is this tool call safe to execute?" },
-          }, { hook: "tool.execute.before", tool: event.tool });
-        }
+        // Niente shadow safety: la sicurezza e' solo deterministica (sopra).
+        // Il modello 0.8B serve routing/priorita/giudice.
       } catch (err) {
         if (err && err.message && err.message.startsWith("[gate]")) throw err;
         // qualsiasi altro errore: fail-open

@@ -24,7 +24,8 @@ fire-and-forget con fail-open. Blocca solo `rules.json` (regex, <1ms).
 | `systemd/opencode-gate.service` | unit → copiare in `~/.config/systemd/user/` |
 | `rules.json` | policy deterministiche (blocchi + ask-shadow) |
 | `thresholds.json` | soglie tarate 2026-10-02 (14 casi, 14/14, `logs/tuning.json`) |
-| `serve.py` | app FastAPI SystemOne (`fastjev-qwen3.5-4b`, GGUF Q4_K_M ~3GB) |
+| `serve08.py` | app FastAPI SystemOne (`openjev-08b-nli`, NLI 0.8B ~1.7GB, CPU, batch per domanda) |
+| `serve.py` | storico: server FastJev 4B (pensionato: lento 7-40s, leak RAM) |
 | `smoke.py` / `tune.py` | test fumo / batteria taratura (solo classificazione) |
 | `~/.config/systemd/user/opencode-gate.service` | persistenza (enable + linger) |
 | `logs/gate.log` | verdetti shadow (`shadow-ok`, `review`, `ask-shadow`, `block`) |
