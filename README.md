@@ -52,8 +52,11 @@ cp plugin/gate.ts ~/.config/opencode/plugins/
 Modello pinnato: `bartowski/Qwen_Qwen3.5-4B-GGUF`
 revisione `4168f45a16a1290d65a4ec0fa312ae917a4c15d6`,
 file `Qwen_Qwen3.5-4B-Q4_K_M.gguf`, backend CPU (`n_gpu_layers=0`).
-NOTA: wheel CUDA cu130 richiede `libcudart.so.13` (assente) e Pascal 6.1
-non è supportato dai build recenti — restare su CPU.
+NOTA GPU (verificato 2026-10-04): offload CUDA non utilizzabile qui.
+Wheel `cu124` si carica con cudart/cublas 12.8 ma va in SIGILL su i5-6500
+(parte CPU compilata per istruzioni più recenti); CUDA 13 escluso (niente
+Pascal). Restare su CPU (`n_gpu_layers=0`). Unica via residua: compilare
+llama-cpp-python da sorgente con toolkit completo (pesante, non fatto).
 
 ## Operatività
 

@@ -10,7 +10,7 @@ backend = LlamaCppBackend.from_pretrained(
     REPO,
     revision=REVISION,
     filename=FILENAME,
-    n_gpu_layers=0,
+    n_gpu_layers=0,  # CPU: wheel CUDA crasha (SIGILL su i5-6500), vedi README
     # prefix_reuse disattivato 2026-10-04: accumulo RAM fino a OOM.
     # Costa qualche secondo in piu per chiamata, ma memoria stabile.
 )
