@@ -11,7 +11,8 @@ backend = LlamaCppBackend.from_pretrained(
     revision=REVISION,
     filename=FILENAME,
     n_gpu_layers=0,
-    prefix_reuse=True,  # una sola valutazione del prefisso stato per decide_many
+    # prefix_reuse disattivato 2026-10-04: accumulo RAM fino a OOM.
+    # Costa qualche secondo in piu per chiamata, ma memoria stabile.
 )
 jev = FastJev(backend)
 service = SystemOneAdapter(

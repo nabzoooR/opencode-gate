@@ -41,29 +41,44 @@ async function logLine(obj) {
   }
 }
 
+let inFlight = 0;
+const MAX_INFLIGHT = 1; // il modello serializza: piu di 1 accoda, timeout e OOM
+
 function shadow(state, questions, meta) {
+  if (inFlight >= MAX_INFLIGHT) {
+    void logLine({ kind: "shadow-dropped", ...meta });
+    return;
+  }
+  inFlight++;
   void (async () => {
     const t0 = Date.now();
     try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 120000);
       const res = await fetch(`${GATE_URL}/v1/systemone`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model: GATE_MODEL, state: String(state).slice(0, 2000), questions }),
+        signal: ctrl.signal,
       });
+      clearTimeout(timer);
       const data = await res.json();
-      await logLine({ kind: "shadow-ok", ms: Date.now() - t0, ...meta, answers: data.answers });
+      const stateSnippet = String(state).slice(0, 300);
+      await logLine({ kind: "shadow-ok", ms: Date.now() - t0, ...meta, state: stateSnippet, answers: data.answers });
       // Flag di review (mai blocco): safety sotto soglia tarata.
       try {
         const s = data.answers && data.answers.safe;
         const lim = thresholds && thresholds.safety && thresholds.safety.review_if_safe_below;
         if (s && typeof s.noul === "number" && typeof lim === "number" && s.noul < lim) {
-          await logLine({ kind: "review", ms: Date.now() - t0, ...meta, safe: s.noul });
+          await logLine({ kind: "review", ms: Date.now() - t0, ...meta, state: String(state).slice(0, 300), safe: s.noul });
         }
       } catch {
         // best-effort
       }
     } catch (err) {
       await logLine({ kind: "shadow-failover", ms: Date.now() - t0, ...meta, error: String(err).slice(0, 200) });
+    } finally {
+      inFlight--;
     }
   })();
 }
