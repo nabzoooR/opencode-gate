@@ -10,8 +10,10 @@ DIR = "/home/nabz/Dev/opencode-gate/models/openjev-08b/qwen3.5-0.8b-nli-v2s-long
 SERVED = "openjev-08b-nli"
 
 tok = AutoTokenizer.from_pretrained(DIR, trust_remote_code=True)
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 model = AutoModelForSequenceClassification.from_pretrained(
-    DIR, dtype=torch.float32, trust_remote_code=True).eval()
+    DIR, dtype=torch.float32, trust_remote_code=True).to(DEVICE).eval()
+print(f"[serve08] device={DEVICE}", flush=True)
 TPL = model.config.nli_template
 ENT = next(int(i) for i, l in model.config.id2label.items() if l == "entailment")
 torch.set_num_threads(4)
@@ -39,14 +41,14 @@ def state_text(s) -> str:
 @torch.no_grad()
 def entail_batch(premise: str, hyps: list[str]) -> list[float]:
     texts = [TPL.format(premise=premise, hypothesis=h) for h in hyps]
-    enc = tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=1024)
+    enc = tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=1024).to(DEVICE)
     logits = model(**enc).logits
     return torch.softmax(logits, -1)[:, ENT].tolist()
 
 
 @app.get("/v1/models")
 def models():
-    return {"models": [{"name": SERVED, "description": "openjev 0.8B NLI cross-encoder (local CPU)"}]}
+    return {"models": [{"name": SERVED, "description": "openjev 0.8B NLI cross-encoder (local GPU)"}]}
 
 
 @app.post("/v1/systemone")

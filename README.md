@@ -93,8 +93,8 @@ deterministica e priority è passata a choice.
 Pinnato: `bartowski/Qwen_Qwen3.5-4B-GGUF`
 revisione `4168f45a16a1290d65a4ec0fa312ae917a4c15d6`,
 file `Qwen_Qwen3.5-4B-Q4_K_M.gguf`, backend CPU (`n_gpu_layers=0`).
-NOTA GPU (verificato 2026-10-04): offload CUDA non utilizzabile qui.
-Wheel `cu124` si carica con cudart/cublas 12.8 ma va in SIGILL su i5-6500
-(parte CPU compilata per istruzioni più recenti); CUDA 13 escluso (niente
-Pascal). Restare su CPU (`n_gpu_layers=0`). Unica via residua: compilare
-llama-cpp-python da sorgente con toolkit completo (pesante, non fatto).
+NOTA GPU (verificato 2026-10-05): FUNZIONA con torch cu126 (kernel sm_61
+presenti; cu130 invece non ne ha). Richiede cudart+cublas 12.8 di sistema e
+`uv pip install torch --index-url .../cu126` (rete lenta verso pypi.nvidia.com:
+ripetere finche passa). 0.8B fp32 = ~3.4GB VRAM, ~56ms/forward, 0.7s/3 domande
+vs 2.4s su CPU. Wheel llama-cpp CUDA resta inutilizzabile (SIGILL su i5).
