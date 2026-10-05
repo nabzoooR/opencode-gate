@@ -42,7 +42,7 @@ async function logLine(obj) {
 }
 
 let inFlight = 0;
-const MAX_INFLIGHT = 1; // il modello serializza: piu di 1 accoda, timeout e OOM
+const MAX_INFLIGHT = 3; // GPU: 0.7s/domanda, assorbe raffiche before+after
 
 function shadow(state, questions, meta) {
   if (inFlight >= MAX_INFLIGHT) {
