@@ -13,3 +13,14 @@ models/
 
 # HF cache se mai puntata qui
 .huggingface/
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+coverage/
+
+# log sparsi e file OS/IDE
+*.log
+.DS_Store
+.idea/
+.vscode/
