@@ -102,6 +102,14 @@ export default {
           await logLine({ kind: "retry-400", attempt: event.attempt });
           event.decision = { retry: true, delay: 5_000 };
         }
+        // Modello non disponibile (capacità free): quarantena + retry.
+        // Il retry riusa lo stesso modello, ma i prossimi subagent lo evitano.
+        if (/model is unavailable|model_unavailable|capacity|overloaded/i.test(msg)) {
+          const model = event.model ? `${event.model.providerID}/${event.model.id}` : "unknown";
+          blocked.set(model, Date.now() + BLOCK_MS);
+          await logLine({ kind: "circuit-break", reason: "unavailable", model, attempt: event.attempt });
+          if (event.attempt === 1) event.decision = { retry: true, delay: 20_000 };
+        }
       } catch { /* fail-open */ }
     });
 
