@@ -96,6 +96,12 @@ export default {
           await logLine({ kind: "circuit-break", model, attempt: event.attempt });
           event.decision = { retry: true, delay: 15_000 };
         }
+        // 400 flakiness provider (Responses API + history lunghe): un retry
+        // singolo aiuta — i "Riprova" manuali avanzano. Solo al 1° tentativo.
+        if (st === 400 && /invalid parameters/i.test(msg) && event.attempt === 1) {
+          await logLine({ kind: "retry-400", attempt: event.attempt });
+          event.decision = { retry: true, delay: 5_000 };
+        }
       } catch { /* fail-open */ }
     });
 
