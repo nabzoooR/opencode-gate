@@ -94,7 +94,9 @@ export default {
           const model = event.model ? `${event.model.providerID}/${event.model.id}` : "unknown";
           blocked.set(model, Date.now() + BLOCK_MS);
           await logLine({ kind: "circuit-break", model, attempt: event.attempt });
-          event.decision = { retry: true, delay: 15_000 };
+          // Cap: oltre il 3° tentativo si martella a vuoto, meglio fallire.
+          if (event.attempt <= 3) event.decision = { retry: true, delay: 15_000 };
+          else event.decision = { retry: false };
         }
         // 400 flakiness provider (Responses API + history lunghe): un retry
         // singolo aiuta — i "Riprova" manuali avanzano. Solo al 1° tentativo.
@@ -109,6 +111,7 @@ export default {
           blocked.set(model, Date.now() + BLOCK_MS);
           await logLine({ kind: "circuit-break", reason: "unavailable", model, attempt: event.attempt });
           if (event.attempt === 1) event.decision = { retry: true, delay: 20_000 };
+          else event.decision = { retry: false };
         }
       } catch { /* fail-open */ }
     });
