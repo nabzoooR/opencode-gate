@@ -4,18 +4,20 @@ const GATE_URL = "http://127.0.0.1:8080";
 const ZEN_MODELS_URL = "https://opencode.ai/zen/v1/models";
 
 // tier: light = zero-retention o leggeri, mid = generalisti, heavy = forti
+// Ordine per tier = classifica bench Flutter ott-2026 (19 casi):
+// muse-spark 19/19 41s, big-pickle 19/19, mimo 19/19, bunny 19/19 38s, nemotron 17/19.
 const FREE_TABLE = [
   { id: "opencode/space-bunny-free", tier: "light", zeroRetention: true },
   { id: "opencode/longcat-2.5-preview-free", tier: "light", zeroRetention: true },
   { id: "opencode/ling-3.1-flash-free", tier: "light", zeroRetention: false },
-  { id: "opencode/mimo-v2.6-flash-free", tier: "light", zeroRetention: false },
+  { id: "opencode/mimo-v2.6-flash-free", tier: "mid", zeroRetention: false },
   { id: "opencode/fledge-alpha-free", tier: "mid", zeroRetention: false },
   { id: "opencode/mimo-v2.5-free", tier: "mid", zeroRetention: false },
   { id: "opencode/ling-3.0-flash-fin-free", tier: "mid", zeroRetention: false },
-  { id: "opencode/big-pickle", tier: "mid", zeroRetention: false },
+  { id: "opencode/muse-spark-1.3-contributor-free", tier: "heavy", zeroRetention: false, trainsOnData: true },
+  { id: "opencode/big-pickle", tier: "heavy", zeroRetention: false },
   { id: "opencode/nemotron-3.5-lightning-free", tier: "heavy", zeroRetention: false, noPersonalData: true },
   { id: "opencode/nemotron-3-ultra-free", tier: "heavy", zeroRetention: false, noPersonalData: true },
-  { id: "opencode/muse-spark-1.3-contributor-free", tier: "heavy", zeroRetention: false, trainsOnData: true },
 ];
 const BLOCK_MS = 10 * 60 * 1000;
 
@@ -39,8 +41,9 @@ export default {
       FREE_TABLE.filter((m) => m.tier === tier && available.has(m.id) && (blocked.get(m.id) || 0) < Date.now())
         .map((m) => m.id);
     const pick = (priority) => {
+      // simple -> light prima: bunny e veloce e corretto (bench 19/19 38s).
       const tiers = priority === "critical" || priority === "complex"
-        ? ["heavy", "mid", "light"] : priority === "simple" ? ["mid", "light", "heavy"] : ["light", "mid", "heavy"];
+        ? ["heavy", "mid", "light"] : priority === "simple" ? ["light", "mid", "heavy"] : ["light", "mid", "heavy"];
       for (const t of tiers) {
         const list = usable(t);
         if (list.length > 0) return { model: list[0], tier: t };
